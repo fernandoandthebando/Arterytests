@@ -34,7 +34,8 @@ ${DESIRED_CAPABILITIES} =  50
 ############ Logging Variables
 
 ${Base_path}              C:/Python27/Artery/
-${Logfiles_path}          screenshotarchive/
+${Results_path}           C:/results/
+${Logfiles_path}          C:/screenshotarchive/
 ${Screenshot_filename}    screenshot.png
 
 
@@ -91,7 +92,8 @@ Setup Suite
 	Set Selenium Speed               ${Selenium_Speed}
 	${Timedate_String} =  Get Current Date  result_format=%m%d%H%M
 	Set Suite Variable               ${Timedate_String}
-	Set Screenshot Directory         ${Logfiles_path}${/}${Timedate_String}${/}
+	#Set Screenshot Directory         ${Logfiles_path}${/}${Timedate_String}${/}
+	#Create Directory                 ${Logfiles_path}${/}${Timedate_String}${/}
 
 #Setup Test
 	#Open Browser  ${START_URL}  ${BROWSER} 
@@ -125,15 +127,16 @@ End Web Test
 
 
 Teardown Suite
+	#Copy Files   ${Results_path}log.html    ${Logfiles_path}${/}${Timedate_String}${/}
 	Close All Browsers
 
 Snap
 	Log Location
-	${screenshot} =  Log Location
-	${screenshot} =  Replace String   ${screenshot}   ${START_URL}   Base-
-	${screenshot} =  Replace String   ${screenshot}   /    - 
-	${screenshot} =  Replace String   ${screenshot}   :    - 
-	Capture Page Screenshot        ${screenshot}.png
+	#${screenshot} =  Log Location
+	#${screenshot} =  Replace String   ${screenshot}   ${START_URL}   Base-
+	#${screenshot} =  Replace String   ${screenshot}   /    - 
+	#${screenshot} =  Replace String   ${screenshot}   :    - 
+	Capture Page Screenshot        #${screenshot}.png
 
 Standard Sleep
 	Sleep                 ${Sleep_Time} 
