@@ -28,7 +28,8 @@ ${Sleep_time}              5
 ${Mailinator_URL}          http://mailinator.com
 
 ${REMOTE_URL} =  http://fernandoandthebando:d5be996d-7cf8-4626-8a86-3097ef60053d@ondemand.saucelabs.com:80/wd/hub
-${DESIRED_CAPABILITIES} =  name:Win 10 ff 26,platform:Windows 10,browserName:firefox,version:26
+#${DESIRED_CAPABILITIES} =  name:Win 10 ff 26,platform:Windows 10,browserName:firefox,version:26
+${DESIRED_CAPABILITIES} =  50
 
 ############ Logging Variables
 
@@ -82,7 +83,10 @@ ${Showcase_Item}          2
 #################################################################################################### General Utilities
 
 Setup Suite
-	Open Browser  ${START_URL}  ${BROWSER}
+	Run keyword if  '${DESIRED_CAPABILITIES}' == '50'
+	...  Open Browser  ${START_URL}  ${BROWSER}
+	Run keyword if  '${DESIRED_CAPABILITIES}' != '50'
+	...  Open Browser  ${START_URL}  ${BROWSER}  remote_url=${REMOTE_URL}  desired_capabilities=${DESIRED_CAPABILITIES}
 	Maximize Browser Window
 	Set Selenium Speed               ${Selenium_Speed}
 	${Timedate_String} =  Get Current Date  result_format=%m%d%H%M
@@ -102,10 +106,9 @@ Setup Suite Sauce
 	Set Screenshot Directory         ${Logfiles_path}${/}${Timedate_String}${/}
 
 Begin Web Test
-    Open Browser  about:blank  ${BROWSER}  remote_url=${REMOTE_URL}  desired_capabilities=${DESIRED_CAPABILITIES}
     # this line is optional if you want to see your test case name sooner in the Saucelabs.com UI
     # Can only be run AFTER opening a browser
-    Run keyword if  '${REMOTE_URL}' != ''
+    Run keyword if  '${DESIRED_CAPABILITIES}' != '50'
     ...  Update Saucelabs Test Name
     ...  ${SUITE_NAME}: ${TEST_NAME}
     ...  ${REMOTE_URL}
@@ -114,7 +117,7 @@ Begin Web Test
 End Web Test
     # this line updates the test case name, result, and tags in the Saucelabs.com UI
     # after the test case has completed but BEFORE closing the browser
-    Run keyword if  '${REMOTE_URL}' != ''
+    Run keyword if  '${DESIRED_CAPABILITIES}' != '50'
     ...  Update Saucelabs Test Result
     ...  ${SUITE_NAME}: ${TEST_NAME}
     ...  ${TEST_STATUS}  ${TEST_TAGS}  ${REMOTE_URL}
@@ -333,7 +336,7 @@ Edit profile allow no
 	Click Element                    xpath=//div[@id='creations']//span[.='Yes']
 
 Edit profile about
-	Click Element       xpath=(//a[contains(@href, '#')])[28]
+	Click Element                   xpath=(//a[contains(@href, '#')])[28]
 	Input Text                      mission                   ${Input_nospaces}
 	Input Text                      bio                       ${Input_nospaces}
 	Input Text                      influences                ${Input_nospaces}
