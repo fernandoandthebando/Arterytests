@@ -1,0 +1,598 @@
+#################################################################################################################
+
+*** Settings ***
+
+#################################################################################################################
+
+Documentation             This test is using the common.txt file as a resource
+Library                   Selenium2Library     implicit_wait=20.0
+Library                   String
+Library                   DateTime
+Library                   BuiltIn
+Library                   OperatingSystem
+Library                   Saucelabs
+
+
+
+#################################################################################################################
+
+*** Variables ***
+
+#################################################################################################################
+
+${BROWSER}                 ff
+${START_URL}               http://dev.artery.is
+${Selenium_Speed}          0
+${Long_Sleep}              20
+${Sleep_time}              5
+${Mailinator_URL}          http://mailinator.com
+
+${REMOTE_URL} =  http://fernandoandthebando:d5be996d-7cf8-4626-8a86-3097ef60053d@ondemand.saucelabs.com:80/wd/hub
+${DESIRED_CAPABILITIES} =  name:Win 10 ff 26,platform:Windows 10,browserName:firefox,version:26
+
+############ Logging Variables
+
+${Base_path}              C:/Python27/Artery/
+${Logfiles_path}          screenshotarchive/
+${Screenshot_filename}    screenshot.png
+
+
+
+##############General input variables
+
+${Input_nospaces}         Testing123onetwothree.
+${Input_short}            Testing 1, 2, 3, one, two, three.
+${Input_long}             ${Input_short}${Input_short}${Input_short}${Input_short}${Input_short}
+
+
+${Valid_Username}         test4850
+${Valid_Username2}        test9999
+${Valid_Password}         portal777
+${Valid_Invite_Code}      PSZmkE
+${New_Username}           test11111
+${Invalid_Invite Code}    FuFuFu
+${Invalid_Password}       chortle777
+${New_Password}           portal888
+
+${Signup_First_Name}      Tester
+${Signup_Last_Name}       Robot
+
+${Paypal_Email}           hello-buyer@pingo.co
+${Paypal_Password}        Test4pingo
+
+@{Showcase_Genre}         2  5  10  11
+
+##########Edit Profile Variables
+
+${Location_input}         Austin   
+${Street_Address}         1600 Pine Knoll Dr
+
+
+
+##########Explore Variables
+
+${Searchterm}             Duck
+${Showcase_Item}          2
+@{Algolia_Genre}          3   6    9
+
+######################################################################################################################
+
+*** Keywords ***
+
+#################################################################################################### General Utilities
+
+Setup Suite
+	Open Browser  ${START_URL}  ${BROWSER}
+	Maximize Browser Window
+	Set Selenium Speed               ${Selenium_Speed}
+	${Timedate_String} =  Get Current Date  result_format=%m%d%H%M
+	Set Suite Variable               ${Timedate_String}
+	Set Screenshot Directory         ${Logfiles_path}${/}${Timedate_String}${/}
+
+#Setup Test
+	#Open Browser  ${START_URL}  ${BROWSER} 
+	#Maximize Browser Window
+
+Setup Suite Sauce
+	Open Browser  ${START_URL}  ${BROWSER}  remote_url=${REMOTE_URL}  desired_capabilities=${DESIRED_CAPABILITIES}
+    Maximize Browser Window
+	Set Selenium Speed               ${Selenium_Speed}
+	${Timedate_String} =  Get Current Date  result_format=%m%d%H%M
+	Set Suite Variable               ${Timedate_String}
+	Set Screenshot Directory         ${Logfiles_path}${/}${Timedate_String}${/}
+
+Begin Web Test
+    Open Browser  about:blank  ${BROWSER}  remote_url=${REMOTE_URL}  desired_capabilities=${DESIRED_CAPABILITIES}
+    # this line is optional if you want to see your test case name sooner in the Saucelabs.com UI
+    # Can only be run AFTER opening a browser
+    Run keyword if  '${REMOTE_URL}' != ''
+    ...  Update Saucelabs Test Name
+    ...  ${SUITE_NAME}: ${TEST_NAME}
+    ...  ${REMOTE_URL}
+    Maximize Browser Window
+
+End Web Test
+    # this line updates the test case name, result, and tags in the Saucelabs.com UI
+    # after the test case has completed but BEFORE closing the browser
+    Run keyword if  '${REMOTE_URL}' != ''
+    ...  Update Saucelabs Test Result
+    ...  ${SUITE_NAME}: ${TEST_NAME}
+    ...  ${TEST_STATUS}  ${TEST_TAGS}  ${REMOTE_URL}
+    Close Browser
+
+
+Teardown Suite
+	Close All Browsers
+
+Snap
+	Log Location
+	${screenshot} =  Log Location
+	${screenshot} =  Replace String   ${screenshot}   ${START_URL}   Base-
+	${screenshot} =  Replace String   ${screenshot}   /    - 
+	${screenshot} =  Replace String   ${screenshot}   :    - 
+	Capture Page Screenshot        ${screenshot}.png
+
+Standard Sleep
+	Sleep                 ${Sleep_Time} 
+
+Scroll Page To Location
+    [Arguments]    ${x_location}    ${y_location}
+    Execute JavaScript    window.scrollTo(${x_location},${y_location})
+
+
+
+#################################################################################################### Login/signup keywords
+
+Login with email	
+	Wait Until Element Is Enabled    username
+	Input Text                       username     ${Valid_Username}
+	Input Text                       password     ${Valid_Password}
+	Click Button                     xpath=//button[@type='submit']
+	
+Login with this session signup	
+	Wait Until Element Is Enabled    username
+	Input Text                       username     test${Timedate_String}
+	Input Text                       password     ${Valid_Password}
+	Click Button                     Login
+
+Go to login page
+	Go To                            ${START_URL}/signin
+
+Go to signup page
+	Go To                            ${START_URL}/signup
+
+
+Go to add showcase page
+	Go To                            ${START_URL}/users/${Valid_Username}/showcases/new
+
+Go to add creation page
+	Go To                            ${START_URL}/users/${Valid_Username}/creations/new
+
+Go to explore showcases
+	Go To                            ${START_URL}/exploreShowcases
+
+Go to explore creations
+	Go To                            ${START_URL}/explore
+
+Go to explore hosts
+	Go To                            ${START_URL}/exploreHosts
+
+Go to explore creators
+	Go To                            ${START_URL}/exploreCreators
+
+Join Artery
+	Click Element                    JOIN ARTERY
+
+Request invite
+	Click Element                    partial link=REQUEST INVITE
+
+Enter invite code
+	Input Text                       invite-code    ${Valid_Invite_Code}
+	Click Element                    join
+
+Enter signup hosting info
+	Wait Until Element is Enabled    xpath=//label[@for='hosting']/span[1]
+	Click Element                    xpath=//label[@for='hosting']/span[1]
+	Input Text                       xpath=//div[@id='collapseOne']/div/textarea   ${Input_nospaces}
+
+Enter signup collaborate info
+	Wait Until Element is Visible    xpath=//label[@for='collaborate']/span[1]
+	Click Element                    xpath=//label[@for='collaborate']/span[1]
+	Click Element                    xpath=//div[@id='headingTwo']/h4/span
+	Input Text                       xpath=//div[@id='collapseTwo']/div/textarea   ${Input_nospaces}
+
+Enter signup looking host info
+	Click Element                    xpath=//label[@for='looking_host']/span[1]
+	Click Element                    xpath=//div[@id='headingThree']/h4/span
+	Input Text                       xpath=//div[@id='collapseThree']/div/textarea   ${Input_nospaces}
+
+Enter signup want to know
+	Click Element                    xpath=//label[@for='no-agenda']/span[1]
+
+Submit signup questions
+	Click Element                    partial link=Next
+
+Fill out and submit signup questions
+	Enter signup hosting info
+	Enter signup collaborate info
+	Enter signup looking host info
+	Enter signup want to know
+	submit signup questions
+
+Click email signup
+	Wait Until Element Is Visible    email-signup
+	Click Element                    email-signup
+
+Click log in
+	Wait Until Element Is Visible    xpath=//a[contains(text(),'Log in')]
+    Click Element                    xpath=//a[contains(text(),'Log in')]     
+
+Enter signup firstname
+	Wait Until Element Is Enabled    first-name
+	Input text                       first-name                    ${Signup_First_Name}
+
+Enter signup lastname
+	Input text                       last-name                     ${Signup_Last_Name}
+
+Enter signup username
+	Input text                       username                      Харито́н${Timedate_String}
+
+Enter signup email
+	Input text                       email                         харито́н${Timedate_String}@mailinator.com
+
+Enter signup password
+	Input text                       password                      ${Valid_Password}
+
+Enter signup verify-password
+	Input text                       verify-password               ${Valid_Password}
+
+Submit signup form
+	Click Element                    xpath=//form[@id='email-signup-form']//button[.='Create my account']
+
+Signup with email
+	Click email signup
+	Enter signup firstname
+	Enter signup lastname
+	Enter signup username
+	Enter signup email
+	Enter signup password
+	Enter signup verify-password
+	Submit signup form
+
+Signup with invite code
+	Go to signup page
+	Enter invite code
+	Fill out and submit signup questions
+	Signup with email
+
+Signup with rsvp buyticket
+	Navbar explore showcases
+	Click showcase explore item attend
+	Click buy ticket
+	Wait Until Element is Enabled   email-signup
+	Signup with email
+	Buy ticket with paypal
+
+Signup with RSVP no ticket
+	Go to                     ${START_URL}/showcases/jbHjzWGqQalK1445906191
+	Click showcase specific attend
+	Click Buy ticket
+	Wait Until Element is Enabled   email-signup
+	Signup with email
+
+
+
+
+################################################################################################### Profile page keywords
+
+Edit profile location
+	Click Link                       edit-location
+	Input Text                       first-name     Edited
+	Input Text                       last-name      Username
+	Input Text                       location     ${Location_input}
+	Press Key                        location     \\\\ARROW_DOWN
+	Press Key                        location     \\13
+	Click Button                     id=update-location
+
+Edit profile check genre     
+
+	[Arguments]    @{Profile_Genre}       
+	
+	Edit profile genre
+	Wait Until Element Is Enabled    id=update-genres
+	:FOR       ${Profile_Genre}   IN  @{Profile_Genre}
+	\	Click Element	     xpath=(//input[@name='creator_genres'])[${Profile_Genre}]
+	Edit profile save genre
+
+
+Edit profile photo
+	Click Element     xpath=//div[@id='profile']/div/div/header/button
+	Filepicker add photo from URL no crop 
+
+
+Edit profile save genre
+
+	Wait Until Element Is Enabled    id=update-genres
+	Click Element                    id=update-genres
+
+
+Edit profile genre 
+	Click Link                       edit-genres
+	
+	
+Edit profile hosting off
+	Click Element                    css=span.bootstrap-switch-handle-on.bootstrap-switch-teal
+
+Edit profile hosting on
+	Click Element                    css=span.bootstrap-switch-handle-off.bootstrap-switch-default
+
+Edit profile allow yes
+	Click Element                    xpath=//div[@id='creations']//span[.='No']
+
+Edit profile allow no
+	Click Element                    xpath=//div[@id='creations']//span[.='Yes']
+
+Edit profile about
+	Click Element       xpath=(//a[contains(@href, '#')])[28]
+	Input Text                      mission                   ${Input_nospaces}
+	Input Text                      bio                       ${Input_nospaces}
+	Input Text                      influences                ${Input_nospaces}
+	Input Text                      inspires                  ${Input_nospaces}
+	Click Element  update-about  
+
+
+
+Edit profile hosting
+	Edit profile hosting pencil
+	Click Element                    venue-type
+	Press Key                        venue-type     \\\\ARROW_DOWN
+	Press Key                        venue-type    \\13
+	Input Text                       name=description            ${Input_nospaces}
+	Input Text                       name=why_become_host        ${Input_nospaces}
+	Edit profile check host genre    7   8   9
+	Input Text                       name=host_what_type         ${Input_nospaces}
+	Click Element                    xpath=//form[@id='venue_image']/button  
+	Filepicker add photo from URL no crop 
+	Click Element  save-hosting-info  
+
+
+
+Edit profile check host genre     
+
+	[Arguments]    @{Host_Genre}       
+	:FOR       ${Host_Genre}   IN  @{Host_Genre}
+	\	Click Element	     xpath=(//input[@name='host_genres'])[${Host_Genre}]
+	
+
+
+Edit profile hosting pencil
+	Click Element  css=#edit-hosting > i.glyphicon.glyphicon-pencil  
+
+Edit profile fill in all questions
+
+	Go to login page
+	Login with email
+	Edit profile about
+	Edit profile location
+	Edit profile check genre   1  2  3  4  5  6  7  8  9
+	Edit profile photo
+	Edit profile hosting
+	Edit profile allow yes
+	Sleep   30
+
+
+
+########################################################################################################## Navbar keywords
+
+Navbar login
+	Click Link                       Login
+
+Navbar explore showcases
+	Click Link                       Showcases
+
+Navbar explore creations
+	Click Link                       Creations
+
+Navbar explore hosts
+	Click Link                       Hosts
+
+Navbar explore creators
+	Click Link                       Creators
+
+
+#################################### Navbar dropdown with no session
+
+Navbar dropdown no session 
+	Click Element                    css=button.navbar-toggle.dropdown-toggle
+
+Navbar dropdown login
+	Navbar dropdown no session 
+	Click Link                       partial link=Log In
+
+Navbar dropdown no session about
+	Navbar dropdown no session 
+	Click Link                       partial link=About Artery
+
+Navbar dropdown no session support
+	Navbar dropdown no session 
+	Click Link                       partial link=Support
+
+#################################### Navbar Dropdown with session
+
+Navbar dropdown session
+	Click Element                    css=a.dropdown-toggle.user-avatar
+
+Navbar dropdown my profile
+	Navbar dropdown session
+	Click Link                       partial link=My Profile
+
+Navbar dropdown inbox
+	Navbar dropdown session
+	Click Link                       xpath=//ul[@class='dropdown-menu']//a[.='Inbox4']
+
+Navbar dropdown add creation
+	Navbar dropdown session
+	Click Link                       partial link=Add Creation
+
+Navbar dropdown add showcase
+	Navbar dropdown session
+	Click Link                       partial link=Add Showcase
+
+Navbar dropdown invite friends
+	Navbar dropdown session
+	Click Link                       partial link=Invite Friends
+
+Navbar dropdown balance
+	Navbar dropdown session
+	Click Link                       partial link=Balance
+
+Navbar dropdown support
+	Navbar dropdown session
+	Click Link                       partial link=Support
+
+Navbar dropdown about
+	Navbar dropdown session
+	Click Link                       partial link=About Artery
+
+Navbar dropdown logout
+	Navbar dropdown session
+	Click Link                       partial link=Log Out
+	Wait Until Element Is Visible    partial link=Login
+
+
+
+#################################### Navbar search keywords
+
+Navbar click search
+	Click Element                    css=span.glyphicon.glyphicon-search
+
+Navbar search
+	Navbar click search
+	Click Element                    css=input.form-control
+	Input Text                       css=input.form-control     ${Searchterm}
+
+
+################################################################################################## Algolia search keywords
+
+Algolia sort
+	Click Element                    css=span.sorting
+
+
+Algolia check genre     
+
+	[Arguments]    @{Algolia_Genre}       
+	
+	:FOR       ${Algolia_Genre}   IN  @{Algolia_Genre}
+	\	Click Element	    xpath=(//input[@name='genre'])[${Algolia_Genre}]
+
+
+Algolia uncheck all genres
+	Click Element                    xpath=//div[@id='show-me-modal']/div/div/div/div[2]/div[2]/div/label/input
+
+Algolia enter location
+	Input Text                       location     ${Location_input}
+	Press Key                        location     \\\\ARROW_DOWN
+	Press Key                        location     \\13
+
+Algolia select radius
+	[Arguments]      ${radius}
+	Select From List By Value        radius     ${radius}  
+
+Algolia submit filter
+	Click Element                    algolia-search
+
+Algolia close modal
+	Click Element                    xpath=//div[@id='show-me-modal']//button[.='Close']         
+
+##################################################################################################### Explore Showcase Keywords
+
+Click showcase specific attend
+	Click Element                    xpath=//div[@id='header-affix']//button[.='ATTEND']
+
+Click showcase explore item header
+	[Arguments]    ${Showcase_Item}
+	Click Element                    xpath=//div[2]/div[2]/div/article[${Showcase_Item}]/div/header/div/a
+
+Mouse over showcase explore item
+	Mouse Over 						 xpath=//div[@class='container']/div[2]/div/article[${Showcase_Item}]
+
+Click showcase explore item view
+	Mouse over showcase explore item
+	Click Element                    xpath=//div[@class='container']/div[2]/div/article[${Showcase_Item}]/figure/a[2]
+
+Click showcase explore item attend
+	Mouse over showcase explore item
+	Click Element                    xpath=//div[@class='container']/div[2]/div/article[${Showcase_Item}]/figure/button
+
+##################################################################################################### Paypal keywords
+
+Click buy ticket
+	Wait Until Element is Visible    rsvp-modal-buy
+	Click Element                    rsvp-modal-buy
+
+Buy ticket with paypal
+	Wait Until Element Is Enabled    xpath=//input[@id='loadLogin']     timeout=20     error=Paypal error
+	Click Element                    xpath=//input[@id='loadLogin']
+	Input Text                       login_email         ${Paypal_Email}
+	Input Text                       login_password      ${Paypal_Password}
+	Wait Until Element Is Enabled    submitLogin         timeout=20     error=Paypal error
+	Click Element   submitLogin
+	Click Element   continue_abovefold
+	Element Should Be Visible   xpath=//div[@class='container']//h2[.='Your RSVP is ready!'] 
+
+
+##################################################################################################### Filepicker keywords
+
+
+Filepicker add photo from url
+
+	Select Frame                     filepicker_dialog
+	Wait Until Element Is Visible    xpath=//div/div[1]/ng-include[3]/div/nav/ul/li[6]/a
+	Click Element                    xpath=//div/div[1]/ng-include[3]/div/nav/ul/li[6]/a
+	Input Text                       xpath=//input[@id='linkAddress']   http://sockeye.tv/blog/wp-content/uploads/2014/03/sockeye-makes-a-robot.jpg
+	Click Element                    xpath=//input[@value='Search']
+	Wait Until Element Is Visible    xpath=//button[@id='e2e_url_select']
+	Click Element                    xpath=//button[@id='e2e_url_select']
+	Wait Until Element Is Visible    xpath=//html[@id='ng-app']/body/div/div[2]/div[2]/div/div[2]/button[2]
+	Click Element                    xpath=//html[@id='ng-app']/body/div/div[2]/div[2]/div/div[2]/button[2]
+	Unselect Frame
+
+Filepicker add photo from url no crop
+
+	Select Frame                     filepicker_dialog
+	Wait Until Element Is Visible    xpath=//div/div[1]/ng-include[3]/div/nav/ul/li[6]/a
+	Click Element                    xpath=//div/div[1]/ng-include[3]/div/nav/ul/li[6]/a
+	Input Text                       xpath=//input[@id='linkAddress']   http://sockeye.tv/blog/wp-content/uploads/2014/03/sockeye-makes-a-robot.jpg
+	Click Element                    xpath=//input[@value='Search']
+	Wait Until Element Is Visible    xpath=//button[@id='e2e_url_select']
+	Click Element                    xpath=//button[@id='e2e_url_select']
+	Unselect Frame
+
+######################################################################################################Add Showcase
+
+Click dragpane
+
+	Element Should Be Visible        css=div.showcase-fp-dragpane
+	Click Element                    css=div.showcase-fp-dragpane
+
+Add showcase check genre     
+
+	[Arguments]    @{Showcase_Genre}       
+	
+	:FOR       ${Showcase_Genre}   IN  @{Showcase_Genre}
+	\	Run Keyword And Ignore Error   Click Element        xpath=(//input[@name='genre'])[${Showcase_Genre}]	    
+
+
+######################################################################################################Mailinator check
+
+
+Mailinator view latest
+
+	Go to                          ${Mailinator_URL}
+	Input Text                     id=inboxfield              ${Valid_Username2}
+	Click Element                  css=button.btn.btn-dark
+	Click Element                  xpath=//ul[@id='mailcontainer']/li[2]/a/div[2]
+	Wait Until Element is Visible    id=mailshowdivhead
+	${Last_Email_Date} =           Get Text          id=mailshowdivhead
+	${time} =  Remove String Using Regexp     ${Last_Email_Date}      [0-9Ͱ-Ͼ]
+	Log             ${time}       
