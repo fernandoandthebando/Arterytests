@@ -28,8 +28,7 @@ ${Sleep_time}              5
 ${Mailinator_URL}          http://mailinator.com
 
 ${REMOTE_URL} =  http://fernandoandthebando:d5be996d-7cf8-4626-8a86-3097ef60053d@ondemand.saucelabs.com:80/wd/hub
-#${DESIRED_CAPABILITIES} =  name:Win 10 ff 26,platform:Windows 10,browserName:firefox,version:26
-${DESIRED_CAPABILITIES} =  50
+${DESIRED_CAPABILITIES} =  50  #This is a dummy value. Define desired capabilities at the command line.
 
 ############ Logging Variables
 
@@ -312,7 +311,7 @@ Edit profile check genre
 
 
 Edit profile photo
-	Click Element     xpath=//div[@id='profile']/div/div/header/button
+	Click Element                     xpath=//div[@id='profile']/div/div/header/button
 	Filepicker add photo from URL no crop 
 
 
@@ -367,12 +366,12 @@ Edit profile check host genre
 
 	[Arguments]    @{Host_Genre}       
 	:FOR       ${Host_Genre}   IN  @{Host_Genre}
-	\	Click Element	     xpath=(//input[@name='host_genres'])[${Host_Genre}]
+	\	Click Element	            xpath=(//input[@name='host_genres'])[${Host_Genre}]
 	
 
 
 Edit profile hosting pencil
-	Click Element  css=#edit-hosting > i.glyphicon.glyphicon-pencil  
+	Click Element                   css=#edit-hosting > i.glyphicon.glyphicon-pencil  
 
 Edit profile fill in all questions
 
@@ -426,7 +425,7 @@ Navbar dropdown no session support
 #################################### Navbar Dropdown with session
 
 Navbar dropdown session
-	Click Element                    css=a.dropdown-toggle.user-avatar
+	Click Element                    css=li.dropdown.hidden-xs > a.navbar-toggle > img.user-avatar
 
 Navbar dropdown my profile
 	Navbar dropdown session

@@ -1,11 +1,9 @@
 *** Settings ***
-Resource                  resources/common.txt
-Resource                  resources/login.txt
-Resource                  resources/navbar.txt
+Resource                  common.txt
 Suite Setup               Setup Suite
-Suite Teardown            #Teardown Suite
-#Test Setup                common.Begin Web Test
-#Test Teardown             common.End Web Test
+Suite Teardown            Teardown Suite
+Test Setup                common.Begin Web Test
+Test Teardown             common.End Web Test
 
 
 ***Test Cases***
